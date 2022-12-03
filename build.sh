@@ -2,4 +2,4 @@
 
 set -xe
 
-clang -o img2term img2term.c -lm
+clang -I./thirdparty/ -o img2term img2term.c -lm
