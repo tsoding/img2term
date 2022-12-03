@@ -524,7 +524,7 @@ int rgb256[][3] = {
     {238,238,238},
 };
 
-void rgb_to_hsl(int r, int g, int b, int *h, int *s, int *l)
+static void rgb_to_hsl(int r, int g, int b, int *h, int *s, int *l)
 {
     float r01 = r/255.0f;
     float g01 = g/255.0f;
@@ -555,48 +555,26 @@ void rgb_to_hsl(int r, int g, int b, int *h, int *s, int *l)
     *l = lf*100.0f;
 }
 
-int distance_hsl256(int i, int h, int s, int l)
+static int distance256(int table256[256][3], int i, int a, int b, int c)
 {
-    int dh = h - hsl256[i][0];
-    int ds = s - hsl256[i][1];
-    int dl = l - hsl256[i][2];
-    return dh*dh + ds*ds + dl*dl;
+    int da = a - table256[i][0];
+    int db = b - table256[i][1];
+    int dc = c - table256[i][2];
+    return da*da + db*db + dc*dc;
 }
 
-int find_ansi_index_by_hsl(int h, int s, int l)
+static int find_ansi_index(int table256[256][3], int a, int b, int c)
 {
     int index = 0;
     for (int i = 0; i < 256; ++i) {
-        if (distance_hsl256(i, h, s, l) < distance_hsl256(index, h, s, l)) {
+        if (distance256(table256, i, a, b, c) < distance256(table256, index, a, b, c)) {
             index = i;
         }
     }
     return index;
 }
 
-int distance_rgb256(int i, int r, int g, int b)
-{
-    int dr = r - rgb256[i][0];
-    int dg = g - rgb256[i][1];
-    int db = b - rgb256[i][2];
-    return dr*dr + dg*dg + db*db;
-}
-
-int find_ansi_index_by_rgb(int r, int g, int b)
-{
-    int index = 0;
-    for (int i = 0; i < 256; ++i) {
-        if (distance_rgb256(i, r, g, b) < distance_rgb256(index, r, g, b)) {
-            index = i;
-        }
-    }
-    return index;
-}
-
-// TODO: find_ansi_index_by_rgb and find_ansi_index_by_hsl literally have the same code but over two different tables.
-// Maybe we should just generalize this?
-
-char *shift_args(int *argc, char ***argv)
+static char *shift_args(int *argc, char ***argv)
 {
     assert(*argc > 0);
     char *result = **argv;
@@ -613,6 +591,7 @@ typedef enum {
 int main(int argc, char **argv)
 {
     // TODO: Add 16 colors support
+    // TODO: Add TrueColor support
     assert(argc > 0);
     const char *program = shift_args(&argc, &argv);
 
@@ -683,11 +662,11 @@ int main(int argc, char **argv)
                     case DIST_HSL: {
                         int h, s, l;
                         rgb_to_hsl(r, g, b, &h, &s, &l);
-                        printf("\e[48;5;%dm  ", find_ansi_index_by_hsl(h, s, l));
+                        printf("\e[48;5;%dm  ", find_ansi_index(hsl256, h, s, l));
                     } break;
 
                     case DIST_RGB: {
-                        printf("\e[48;5;%dm  ", find_ansi_index_by_rgb(r, g, b));
+                        printf("\e[48;5;%dm  ", find_ansi_index(rgb256, r, g, b));
                     } break;
 
                     default: assert(0 && "unreachable");
