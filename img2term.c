@@ -605,9 +605,7 @@ char *shift_args(int *argc, char ***argv)
 
 int main(int argc, char **argv)
 {
-    // TODO: check if the terminal support 256 colors and stuff
-    // And throw an error if it doesn't
-    // (Also, maybe similar 16 colors support??)
+    // TODO: 16 colors support
     assert(argc > 0);
     const char *program = shift_args(&argc, &argv);
 
