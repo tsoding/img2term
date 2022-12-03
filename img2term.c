@@ -640,7 +640,10 @@ int main(int argc, char **argv)
             int resized_height = height*resized_width/width;
 
             uint32_t *resized_pixels = malloc(sizeof(uint32_t)*resized_width*resized_height);
-            assert(resized_pixels != NULL);
+            if (resized_pixels == NULL) {
+                fprintf(stderr, "ERROR: could not allocate memory for resized image\n");
+                exit(1);
+            }
 
             stbir_resize_uint8(
                 (const unsigned char*)pixels, width, height, sizeof(uint32_t)*width,
