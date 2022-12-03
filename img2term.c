@@ -683,3 +683,5 @@ int main(int argc, char **argv)
 
     return 0;
 }
+// TODO: automated testing
+// Since the whole behaviour of the program is represented by its stdout, it should be pretty easy to have some autotests
