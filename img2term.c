@@ -622,6 +622,11 @@ int main(int argc, char **argv)
             }
 
             resized_width = atoi(shift_args(&argc, &argv));
+
+            if (resized_width < 0) {
+                fprintf(stderr, "ERROR: the value of %s can't be negative\n", flag);
+                exit(1);
+            }
         } else {
             const char *file_path = flag;
 
