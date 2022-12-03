@@ -613,6 +613,8 @@ int main(int argc, char **argv)
 
     int resized_width = 32;
 
+    // TODO: implement help flag that explains the usage
+    // TODO: throw an error if not a single file was provided
     while (argc > 0) {
         const char *flag = shift_args(&argc, &argv);
         if (strcmp(flag, "-w") == 0) {
@@ -639,12 +641,15 @@ int main(int argc, char **argv)
 
             int resized_height = height*resized_width/width;
 
+            // TODO: maybe use a custom resize algorithm that does not require any memory allocation?
+            // Similar to how olive.c resize the sprites.
             uint32_t *resized_pixels = malloc(sizeof(uint32_t)*resized_width*resized_height);
             if (resized_pixels == NULL) {
                 fprintf(stderr, "ERROR: could not allocate memory for resized image\n");
                 exit(1);
             }
 
+            // TODO: stbir_resize_uint8 returns int, which means it can fail. We should check for that.
             stbir_resize_uint8(
                 (const unsigned char*)pixels, width, height, sizeof(uint32_t)*width,
                 (unsigned char*)resized_pixels, resized_width, resized_height, sizeof(uint32_t)*resized_width,
@@ -662,6 +667,7 @@ int main(int argc, char **argv)
                     g = a*g/255;
                     b = a*b/255;
                     int h, s, l;
+                    // TODO: introduce flag that searches closest color in RGB space as well (for comparison with HSL)
                     rgb_to_hsl(r, g, b, &h, &s, &l);
                     printf("\e[48;5;%dm  ", find_ansi_index_by_hsl(h, s, l));
                 }
