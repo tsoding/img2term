@@ -605,7 +605,7 @@ char *shift_args(int *argc, char ***argv)
 
 int main(int argc, char **argv)
 {
-    // TODO: 16 colors support
+    // TODO: Add 16 colors support
     assert(argc > 0);
     const char *program = shift_args(&argc, &argv);
 
@@ -633,6 +633,8 @@ int main(int argc, char **argv)
             int width, height;
             uint32_t *pixels = (uint32_t*)stbi_load(file_path, &width, &height, NULL, 4);
             if (pixels == NULL) {
+                // TODO: don't crash the entire program on failed to open file.
+                // Just continue processing the files.
                 fprintf(stderr, "ERROR: could not read file %s\n", file_path);
                 exit(1);
             }
@@ -641,6 +643,8 @@ int main(int argc, char **argv)
 
             // TODO: maybe use a custom resize algorithm that does not require any memory allocation?
             // Similar to how olive.c resize the sprites.
+            // (Though stb_image_resize supports a lot of fancy filters and stuff which we may try
+            // to utilize to improve the results)
             uint32_t *resized_pixels = malloc(sizeof(uint32_t)*resized_width*resized_height);
             if (resized_pixels == NULL) {
                 fprintf(stderr, "ERROR: could not allocate memory for resized image\n");
