@@ -574,25 +574,27 @@ int find_ansi_index_by_hsl(int h, int s, int l)
     return index;
 }
 
+int distance_rgb256(int i, int r, int g, int b)
+{
+    int dr = r - rgb256[i][0];
+    int dg = g - rgb256[i][1];
+    int db = b - rgb256[i][2];
+    return dr*dr + dg*dg + db*db;
+}
+
 int find_ansi_index_by_rgb(int r, int g, int b)
 {
     int index = 0;
-    int dr = r - rgb256[index][0];
-    int dg = g - rgb256[index][1];
-    int db = b - rgb256[index][2];
-    int d = dr*dr + dg*dg + db*db;
     for (int i = 0; i < 256; ++i) {
-        dr = r - rgb256[i][0];
-        dg = g - rgb256[i][1];
-        db = b - rgb256[i][2];
-        int dd = dr*dr + dg*dg + db*db;
-        if (dd < d) {
+        if (distance_rgb256(i, r, g, b) < distance_rgb256(index, r, g, b)) {
             index = i;
-            d = dd;
         }
     }
     return index;
 }
+
+// TODO: find_ansi_index_by_rgb and find_ansi_index_by_hsl literally have the same code but over two different tables.
+// Maybe we should just generalize this?
 
 char *shift_args(int *argc, char ***argv)
 {
@@ -603,6 +605,11 @@ char *shift_args(int *argc, char ***argv)
     return result;
 }
 
+typedef enum {
+    DIST_HSL,
+    DIST_RGB,
+} Distance;
+
 int main(int argc, char **argv)
 {
     // TODO: Add 16 colors support
@@ -610,6 +617,7 @@ int main(int argc, char **argv)
     const char *program = shift_args(&argc, &argv);
 
     int resized_width = 32;
+    Distance distance = DIST_HSL;
 
     // TODO: implement help flag that explains the usage
     // TODO: throw an error if not a single file was provided
@@ -627,6 +635,10 @@ int main(int argc, char **argv)
                 fprintf(stderr, "ERROR: the value of %s can't be negative\n", flag);
                 exit(1);
             }
+        } else if (strcmp(flag, "-rgb") == 0) {
+            distance = DIST_RGB;
+        } else if (strcmp(flag, "-hsl") == 0) {
+            distance = DIST_HSL;
         } else {
             const char *file_path = flag;
 
@@ -657,7 +669,6 @@ int main(int argc, char **argv)
                 (unsigned char*)resized_pixels, resized_width, resized_height, sizeof(uint32_t)*resized_width,
                 4);
 
-
             for (int y = 0; y < resized_height; ++y) {
                 for (int x = 0; x < resized_width; ++x) {
                     uint32_t pixel = resized_pixels[y*resized_width + x];
@@ -668,10 +679,19 @@ int main(int argc, char **argv)
                     r = a*r/255;
                     g = a*g/255;
                     b = a*b/255;
-                    int h, s, l;
-                    // TODO: introduce flag that searches closest color in RGB space as well (for comparison with HSL)
-                    rgb_to_hsl(r, g, b, &h, &s, &l);
-                    printf("\e[48;5;%dm  ", find_ansi_index_by_hsl(h, s, l));
+                    switch (distance) {
+                    case DIST_HSL: {
+                        int h, s, l;
+                        rgb_to_hsl(r, g, b, &h, &s, &l);
+                        printf("\e[48;5;%dm  ", find_ansi_index_by_hsl(h, s, l));
+                    } break;
+
+                    case DIST_RGB: {
+                        printf("\e[48;5;%dm  ", find_ansi_index_by_rgb(r, g, b));
+                    } break;
+
+                    default: assert(0 && "unreachable");
+                    }
                 }
                 printf("\e[0m\n");
             }
