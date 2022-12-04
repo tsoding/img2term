@@ -643,10 +643,8 @@ int main(int argc, char **argv)
             int width, height;
             uint32_t *pixels = (uint32_t*)stbi_load(file_path, &width, &height, NULL, 4);
             if (pixels == NULL) {
-                // TODO: don't crash the entire program on failed to open file.
-                // Just continue processing the files.
                 fprintf(stderr, "ERROR: could not read file %s\n", file_path);
-                exit(1);
+                continue;
             }
 
             int resized_height = height*resized_width/width;
