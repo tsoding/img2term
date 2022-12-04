@@ -1,6 +1,6 @@
 # img2term
 
-Print an image in the terminal using the term 256 colors
+Print images in the terminal using the [term 256 colors](https://www.ditig.com/256-colors-cheat-sheet)
 
 ![thumbnail](./imgs/thumbnail.png)
 

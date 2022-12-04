@@ -6,6 +6,8 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb_image_resize.h"
 
+#define DEFAULT_WIDTH 32
+
 int hsl256[][3] = {
     {0, 0, 0},
     {0, 100, 25},
@@ -588,6 +590,21 @@ typedef enum {
     DIST_RGB,
 } Distance;
 
+void usage(const char *program)
+{
+    fprintf(stderr, "Usage: %s [OPTIONS...] [FILES...]\n", program);
+    fprintf(stderr, "Options:\n");
+    fprintf(stderr, "    -w      width of the image default is %d\n", DEFAULT_WIDTH);
+    fprintf(stderr, "    -rgb    search nearest color in RGB space\n");
+    fprintf(stderr, "    -hsl    search nearest color in HSL space (default)\n");
+    fprintf(stderr, "    -h      print this help and exit\n");
+    fprintf(stderr, "Example:\n");
+    fprintf(stderr, "    $ %s -w 16 image1.png -rgb -w 32 image2.png\n", program);
+    fprintf(stderr, "    Print image1.png with width 16 and HSL search space then \n");
+    fprintf(stderr, "    print image2.png with widht 32 and RGB search space.\n");
+    fprintf(stderr, "    Each flags override the previous one.\n");
+}
+
 int main(int argc, char **argv)
 {
     // TODO: Add 16 colors support
@@ -595,10 +612,9 @@ int main(int argc, char **argv)
     assert(argc > 0);
     const char *program = shift_args(&argc, &argv);
 
-    int resized_width = 32;
+    int resized_width = DEFAULT_WIDTH;
     Distance distance = DIST_HSL;
 
-    // TODO: implement help flag that explains the usage
     // TODO: throw an error if not a single file was provided
     while (argc > 0) {
         const char *flag = shift_args(&argc, &argv);
@@ -618,6 +634,9 @@ int main(int argc, char **argv)
             distance = DIST_RGB;
         } else if (strcmp(flag, "-hsl") == 0) {
             distance = DIST_HSL;
+        } else if (strcmp(flag, "-h") == 0) {
+            usage(program);
+            exit(0);
         } else {
             const char *file_path = flag;
 
