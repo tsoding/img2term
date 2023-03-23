@@ -590,11 +590,18 @@ typedef enum {
     DIST_RGB,
 } Distance;
 
+typedef enum {
+    MODE_NEAREST,
+    MODE_TRUECOLOR
+} Mode;
+
 void usage(const char *program)
 {
     fprintf(stderr, "Usage: %s [OPTIONS...] [FILES...]\n", program);
     fprintf(stderr, "Options:\n");
     fprintf(stderr, "    -w      width of the image default is %d\n", DEFAULT_WIDTH);
+    fprintf(stderr, "    -n      nearest mode (default)\n");
+    fprintf(stderr, "    -t      truecolor mode\n");
     fprintf(stderr, "    -rgb    search nearest color in RGB space\n");
     fprintf(stderr, "    -hsl    search nearest color in HSL space (default)\n");
     fprintf(stderr, "    -h      print this help and exit\n");
@@ -613,6 +620,7 @@ int main(int argc, char **argv)
     const char *program = shift_args(&argc, &argv);
 
     int resized_width = DEFAULT_WIDTH;
+    Mode mode = MODE_NEAREST;
     Distance distance = DIST_HSL;
 
     // TODO: throw an error if not a single file was provided
@@ -630,6 +638,10 @@ int main(int argc, char **argv)
                 fprintf(stderr, "ERROR: the value of %s can't be negative\n", flag);
                 exit(1);
             }
+        } else if (strcmp(flag, "-n") == 0) {
+            mode = MODE_NEAREST;
+        } else if (strcmp(flag, "-t") == 0) {
+            mode = MODE_TRUECOLOR;
         } else if (strcmp(flag, "-rgb") == 0) {
             distance = DIST_RGB;
         } else if (strcmp(flag, "-hsl") == 0) {
@@ -675,6 +687,16 @@ int main(int argc, char **argv)
                     r = a*r/255;
                     g = a*g/255;
                     b = a*b/255;
+
+                    if (mode == MODE_TRUECOLOR) {
+                        printf("\e[48;2;%d;%d;%dm  ", r, g, b);
+                        continue;
+                    }
+
+                    if (mode != MODE_NEAREST) {
+                        assert(0 && "unreachable");
+                    }
+
                     switch (distance) {
                     case DIST_HSL: {
                         int h, s, l;
