@@ -588,6 +588,7 @@ static char *shift_args(int *argc, char ***argv)
 typedef enum {
     DIST_HSL,
     DIST_RGB,
+    DIST_RGBT,
 } Distance;
 
 void usage(const char *program)
@@ -597,6 +598,7 @@ void usage(const char *program)
     fprintf(stderr, "    -w      width of the image default is %d\n", DEFAULT_WIDTH);
     fprintf(stderr, "    -rgb    search nearest color in RGB space\n");
     fprintf(stderr, "    -hsl    search nearest color in HSL space (default)\n");
+    fprintf(stderr, "    -rgbt   true rgb 24bit color space\n");
     fprintf(stderr, "    -h      print this help and exit\n");
     fprintf(stderr, "Example:\n");
     fprintf(stderr, "    $ %s -w 16 image1.png -rgb -w 32 image2.png\n", program);
@@ -634,6 +636,8 @@ int main(int argc, char **argv)
             distance = DIST_RGB;
         } else if (strcmp(flag, "-hsl") == 0) {
             distance = DIST_HSL;
+        } else if (strcmp(flag, "-rgbt") == 0) {
+            distance = DIST_RGBT;
         } else if (strcmp(flag, "-h") == 0) {
             usage(program);
             exit(0);
@@ -685,6 +689,10 @@ int main(int argc, char **argv)
                     case DIST_RGB: {
                         printf("\e[48;5;%dm  ", find_ansi_index(rgb256, r, g, b));
                     } break;
+                    case DIST_RGBT:{
+                        printf("\e[48;2;%d;%d;%dm  ", r, g, b);
+                      break;
+                    }
 
                     default: assert(0 && "unreachable");
                     }
